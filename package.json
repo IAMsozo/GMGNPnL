@@ -1,0 +1,19 @@
+{
+  "name": "gmgn-wallet-pnl",
+  "version": "1.0.0",
+  "description": "Solana wallet PnL analyzer powered by GMGN Agent API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "node-fetch": "^2.7.0",
+    "uuid": "^9.0.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
