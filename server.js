@@ -28,9 +28,27 @@ async function gmgn(endpoint, params = {}) {
   });
   const url = `${GMGN_BASE}${endpoint}?${qs}`;
   const res = await fetch(url, {
-    headers: { "X-APIKEY": GMGN_API_KEY, "Content-Type": "application/json" },
+    headers: {
+      "X-APIKEY": GMGN_API_KEY,
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "Accept-Language": "en-US,en;q=0.9",
+    },
   });
-  const data = await res.json();
+
+  const text = await res.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    const err = new Error(
+      `GMGN returned non-JSON (HTTP ${res.status}). Likely Cloudflare block or IP not whitelisted. First 200 chars: ${text.slice(0, 200)}`
+    );
+    err.status = res.status;
+    throw err;
+  }
+
   if (data.code !== 0) {
     const err = new Error(data.message || data.error || "GMGN error");
     err.status = res.status;
@@ -90,6 +108,16 @@ app.get("/api/wallet/info", async (req, res) => {
 
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, hasKey: !!GMGN_API_KEY, time: new Date().toISOString() });
+});
+
+// Debug: check the server's outbound IP (whitelist this in GMGN if needed)
+app.get("/api/myip", async (req, res) => {
+  try {
+    const r = await fetch("https://api.ipify.org?format=json");
+    res.json(await r.json());
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // Catch-all: serve index.html for any non-API route (SPA)
